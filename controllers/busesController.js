@@ -1,107 +1,106 @@
-const db=require('../utils/db-connection')
+const {Op } = require('sequelize');
+const buses=require('../models/busesmodel');
+const sequelize = require('sequelize');
 
-
-const getbuses=(req,res)=>{
-    const getQuery=`select busNumber from buses`
-    db.execute(getQuery,(err,result)=>{
-         if(err){
-            console.log(err)
-            res.status(500).send(err.message)
-           
-            return;
-        }
-         if(result.length===0){
-             res.status(200).send("there are no buses")
+const getbuses=async(req,res)=>{
+     try {
+        const allbuses=await buses.findAll();
+         if(allbuses.length===0){
+              res.status(200).send("there are no buses")
              return;
         }
-        res.status(200).send(result)
-    })
-}
+        res.status(200).send(allbuses)
 
-
-const addbuses=(req,res)=>{
-    const {busNumber,totalSeats,availableSeats}=req.body;
-    const addQuery=`insert into buses(busNumber,totalSeats,availableSeats) 
-    values(?,?,?)`
-
-    db.execute(addQuery,[ busNumber,totalSeats,availableSeats],(err)=>{
-        if(err){
-            console.log(err)
-            res.status(500).send(err.message)
-            
-            return;
-        }
-        console.log("buses added")
-        res.status(200).send(`buses ${busNumber} added`)
-    })
-
-}
-const getbusesMorethan=(req,res)=>{
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
     
-    const availables=req.params.seats;
-    const getQuery=`select busNumber from buses where availableSeats>${availables}`
-    db.execute(getQuery,(err,result)=>{
-         if(err){
-            console.log(err)
-            res.status(500).send(err.message)
-           
-            return;
-        }
-         if(result.length===0){
-             res.status(200).send(`there are no buses more than ${availables} seats` )
+}
+
+//add insert
+const addbuses=async(req,res)=>{
+
+     try {
+        const {busNumber,totalSeats,availableSeats}=req.body;
+         
+         await buses.create({
+         busNumber:busNumber,
+         totalSeats:totalSeats,
+         availableSeats:availableSeats
+        })
+        res.status(200).send(`buses ${busNumber} added`)
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+    
+
+    
+}
+//get more than
+const getbusesMorethan=async(req,res)=>{
+    try {
+        const requested=parseInt(req.params.seats);
+        const Buses=await buses.findAll({
+            where:{
+                availableSeats:{
+                    [Op.gt]:requested
+                }
+                
+            }
+         })
+        
+        if(Buses.length===0){
+            res.status(404).send(`no buses found more than ${requested} seats`)
              return;
         }
-        res.status(200).send(result)
-    })
+       res.status(200).send(Buses)
+
+    } catch (error) {
+        res.status(500).send(error.message)
+    } 
 }
-// const updatestudent=(req,res)=>{
-//     const id=req.params.id;
-//     const {name}=req.body;
-//     const updateQuery=`update  students set name=? where id=?`
-
-//     db.execute(updateQuery,[name,id],(err,result)=>{
-//         if(err){
-//             console.log(err)
-//             res.status(500).send(err.message)
-            
-//             return;
-//         }
-//         if(result.affectedRows===0){
-//             res.status(404).send("student not found")
-//             return;
-//         }
-//         console.log("student updated")
-//         res.status(200).send(`student ${name} updated`)
-//     })
-
-// }
+//update]
+const updateBus=async(req,res)=>{
+    try {
+        const id=req.params.id;
+        const {busNumber,totalSeats,availableSeats}=req.body;
+        const bus=await buses.findByPk(id)
+        if(!bus){
+         res.status(404).send("bus  not found")
+         return;
+        }
+       if(busNumber)bus.busNumber=busNumber;
+       if(totalSeats)bus.totalSeats=totalSeats;
+       if(availableSeats)bus.availableSeats=availableSeats;
+        await bus.save()
+ 
+       res.status(200).send(`bus with busNumber ${busNumber} updated`)
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+    
+}
 //delete
-// const deleteStudent=(req,res)=>{
-//     const id=req.params.id;
-   
-//     const deleteQuery=`DELETE FROM students where id=?`
-
-//     db.execute(deleteQuery,[id],(err,result)=>{
-//         if(err){
-//             console.log(err)
-//             res.status(500).send(err.message)
-           
-//             return;
-//         }
-//         if(result.affectedRows===0){
-//             res.status(404).send("student not found")
-//             return;
-//         }
-//         console.log("student deleted")
-//         res.status(200).send(`student  deleted with id ${id}`)
-//     })
-
-// }
+const deletebus=async(req,res)=>{
+    const {id}=req.params;
+    const bus=await buses.destroy({
+        where:{
+            id:id
+        }
+    })
+    if(!bus){
+        res.status(404).send("bus  not found")
+         return;
+    }
+    res.status(200).send("selected bus deleted")
+}
 
 module.exports={
 
     addbuses,
     getbuses,
-    getbusesMorethan
+    getbusesMorethan,
+    updateBus,
+    deletebus
   
 }

@@ -1,67 +1,85 @@
-// const db=require('../utils/db-connection')
-// const addstudent=(req,res)=>{
-//     const {name,email}=req.body;
-//     const addQuery=`insert into students(name,email) 
-//     values(?,?)`
+const db=require('../utils/db-connection')
+const payments=require('../models/paymentsmodel');
+const { all } = require('axios');
 
-//     db.execute(addQuery,[ name,email],(err)=>{
-//         if(err){
-//             console.log(err)
-//             res.status(500).send(err.message)
-            
-//             return;
-//         }
-//         console.log("student added")
-//         res.status(200).send(`student ${name} added`)
-//     })
 
-// }
-// const updatestudent=(req,res)=>{
-//     const id=req.params.id;
-//     const {name}=req.body;
-//     const updateQuery=`update  students set name=? where id=?`
+const getpayments=async(req,res)=>{
+    try {
+        const allpayments=await payments.findAll();
+         if(allpayments.length===0){
+              res.status(200).send("there are no payments")
+             return;
+        }
+        res.status(200).send(allpayments)
 
-//     db.execute(updateQuery,[name,id],(err,result)=>{
-//         if(err){
-//             console.log(err)
-//             res.status(500).send(err.message)
-            
-//             return;
-//         }
-//         if(result.affectedRows===0){
-//             res.status(404).send("student not found")
-//             return;
-//         }
-//         console.log("student updated")
-//         res.status(200).send(`student ${name} updated`)
-//     })
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+    
 
-// }
-// //delete
-// const deleteStudent=(req,res)=>{
-//     const id=req.params.id;
+}
+
+
+const addPayment=async(req,res)=>{
+    try {
+         const {amountPaid,paymentStatus}=req.body;
+         await payments.create({
+         amountPaid:amountPaid,
+         paymentStatus:paymentStatus
+        })
+        res.status(200).send(`new payment ${amountPaid} added`)
+
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+    
+
+}
+const updatpayment=async(req,res)=>{
+    try {
+        const id=req.params.id;
+        const {amountPaid,paymentStatus}=req.body;
+        const payment= await payments.findByPk(id);
+        if(!payment){
+            res.status(404).send("payment not found")
+             return;
+        }
+        if(amountPaid)payment.amountPaid=amountPaid;
+        if(paymentStatus)payment.paymentStatus=paymentStatus;
+        await payment.save();
+        res.status(200).send(`payment updated`)
+
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+    
    
-//     const deleteQuery=`DELETE FROM students where id=?`
 
-//     db.execute(deleteQuery,[id],(err,result)=>{
-//         if(err){
-//             console.log(err)
-//             res.status(500).send(err.message)
-           
-//             return;
-//         }
-//         if(result.affectedRows===0){
-//             res.status(404).send("student not found")
-//             return;
-//         }
-//         console.log("student deleted")
-//         res.status(200).send(`student  deleted with id ${id}`)
-//     })
+}
+//delete
+const deletpayment=async(req,res)=>{
+    try {
+         const id=req.params.id;
+         const payment=await payments.destroy({
+            where:{
+                id:id
+            }
+         })
+         if(!payment){
+            res.status(404).send("payment not found")
+             return;
+         }
+          res.status(200).send(`payment deleted`)
 
-// }
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+   
+} 
 
-// module.exports={
-//     addstudent,
-//     updatestudent,
-//     deleteStudent
-// }
+module.exports={
+    addPayment,
+    updatpayment,
+    getpayments,
+    deletpayment
+}

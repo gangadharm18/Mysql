@@ -1,14 +1,14 @@
-// const express=require('express')
-// const router=express.Router();
-// const paymentscontroller=require('')
+const express=require('express')
+const router=express.Router();
+const paymentscontroller=require('../controllers/paymentsController')
 
 
 
-// router.get('/',paymentscontroller)
-// router.post('/add',)
-// // router.put('/update/:id',)
-// // router.delete('/delete/:id')
+router.get('/',paymentscontroller.getpayments)
+router.post('/',paymentscontroller.addPayment)
+router.put('/:id',paymentscontroller.updatpayment)
+router.delete('/:id',paymentscontroller.deletpayment)
 
-// module.exports=router;
+module.exports=router;
 
-
+  

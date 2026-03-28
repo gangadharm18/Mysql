@@ -4,10 +4,10 @@ const busescontroller=require('../controllers/busesController')
 
 
 router.get('/',busescontroller.getbuses)
-router.post('/add',busescontroller.addbuses)
-router.get('/available/:seats',busescontroller.getbusesMorethan)
-// router.put('/update/:id',)
-// router.delete('/delete/:id')
+router.post('/',busescontroller.addbuses)
+router.get('/morethan/:seats',busescontroller.getbusesMorethan)
+router.put('/:id',busescontroller.updateBus)
+router.delete('/:id',busescontroller.deletebus)
 
 module.exports=router;
 

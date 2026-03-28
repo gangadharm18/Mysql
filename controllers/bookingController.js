@@ -1,67 +1,76 @@
-// const db=require('../utils/db-connection')
-// const addstudent=(req,res)=>{
-//     const {name,email}=req.body;
-//     const addQuery=`insert into students(name,email) 
-//     values(?,?)`
+const db=require('../utils/db-connection')
+const bookings=require('../models/bookingmodel');
 
-//     db.execute(addQuery,[ name,email],(err)=>{
-//         if(err){
-//             console.log(err)
-//             res.status(500).send(err.message)
-            
-//             return;
-//         }
-//         console.log("student added")
-//         res.status(200).send(`student ${name} added`)
-//     })
 
-// }
-// const updatestudent=(req,res)=>{
-//     const id=req.params.id;
-//     const {name}=req.body;
-//     const updateQuery=`update  students set name=? where id=?`
-
-//     db.execute(updateQuery,[name,id],(err,result)=>{
-//         if(err){
-//             console.log(err)
-//             res.status(500).send(err.message)
-            
-//             return;
-//         }
-//         if(result.affectedRows===0){
-//             res.status(404).send("student not found")
-//             return;
-//         }
-//         console.log("student updated")
-//         res.status(200).send(`student ${name} updated`)
-//     })
-
-// }
-// //delete
-// const deleteStudent=(req,res)=>{
-//     const id=req.params.id;
+const addBooking=async(req,res)=>{
+    try {
+        const {seatNumber}=req.body;
+        await bookings.create({
+        seatNumber:seatNumber
+    })
+    res.status(200).send(`seatnumber ${seatNumber} booked`)
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
    
-//     const deleteQuery=`DELETE FROM students where id=?`
 
-//     db.execute(deleteQuery,[id],(err,result)=>{
-//         if(err){
-//             console.log(err)
-//             res.status(500).send(err.message)
-           
-//             return;
-//         }
-//         if(result.affectedRows===0){
-//             res.status(404).send("student not found")
-//             return;
-//         }
-//         console.log("student deleted")
-//         res.status(200).send(`student  deleted with id ${id}`)
-//     })
+}
+const updateBooking=async(req,res)=>{
+    try {
+        const id=req.params.id;
+        const {seatNumber}=req.body;
+        const booked=await bookings.findByPk(id)
+        if(!booked){
+            res.status(404).send("student not found")
+            return;
+        }
+        booked.seatNumber=seatNumber;
+        await booked.save();
+        res.status(200).send(`seatNumber  updated to ${seatNumber}`)
 
-// }
+    } catch (error) {
+         res.status(500).send(error.message)
+    }
+    
 
-// module.exports={
-//     addstudent,
-//     updatestudent,
-//     deleteStudent
-// }
+}
+//delete
+const deleteBooking=async(req,res)=>{
+    try {
+        const id=req.params.id;
+        const booked=await bookings.destroy({
+            where:{
+                id:id
+            }
+        })
+        if(!booked){
+             res.status(404).send("Booking for that seat not found")
+            return;
+        }
+        res.status(200).send(`bookings  deleted with id ${id}`)
+    } catch (error) {
+         res.status(500).send(error.message)
+    }
+    
+}
+const getBooking=async(req,res)=>{
+    try {
+         const booked=await bookings.findAll();
+        if(booked.length===0){
+          res.status(404).send("No Bookings found")
+            return;
+        } 
+         res.status(200).json(booked)
+
+    } catch (error) {
+         res.status(500).send(error.message)
+    }
+    
+}
+
+module.exports={
+    addBooking,
+    updateBooking,
+    deleteBooking,
+    getBooking
+}

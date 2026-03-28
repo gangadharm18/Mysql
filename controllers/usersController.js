@@ -1,82 +1,80 @@
 const db=require('../utils/db-connection')
+const users=require('../models/usersmodel');
 
-const getusers=(req,res)=>{
-    const getQuery=`select name from users`
-    db.execute(getQuery,(err,result)=>{
-         if(err){
-            console.log(err)
-            res.status(500).send(err.message)
-           
-            return;
-        }
-        if(result.length===0){
-             res.status(200).send("there are no users")
+
+const getusers=async(req,res)=>{
+    try {
+        const allusers=await users.findAll();
+         if(allusers.length===0){
+              res.status(200).send("there are no users")
              return;
         }
-        res.status(200).send(result)
-    })
+        res.status(200).send(allusers)
+
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+    
+
 }
+//addor insert
 
-
-const adduser=(req,res)=>{
-    const {name,email}=req.body;
-    const addQuery=`insert into users(name,email) 
-    values(?,?)`
-
-    db.execute(addQuery,[name,email],(err)=>{
-        if(err){
-            console.log(err)
-            res.status(500).send(err.message)
-            
-            return;
-        }
-        console.log("user added")
+const adduser=async(req,res)=>{
+    try {
+         const {name,email}=req.body;
+         await users.create({
+         name:name,
+         email:email
+        })
         res.status(200).send(`user ${name} added`)
-    })
+
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+    
 
 }
-const updateusername=(req,res)=>{
-    const id=req.params.id;
-    const {name}=req.body;
-    const updateQuery=`update  user set name=? where id=?`
-
-    db.execute(updateQuery,[name,id],(err,result)=>{
-        if(err){
-            console.log(err)
-            res.status(500).send(err.message)
-            
-            return;
-        }
-        if(result.affectedRows===0){
+const updateusername=async(req,res)=>{
+    try {
+        const id=req.params.id;
+        const {name,email}=req.body;
+        const user= await users.findByPk(id);
+        if(!user){
             res.status(404).send("user not found")
-            return;
+             return;
         }
-        console.log("users updated")
+        if(name)user.name=name;
+        if(email)user.email=email;
+        await user.save();
         res.status(200).send(`user ${name} updated`)
-    })
+
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+    
+   
 
 }
 //delete
-const deleteuser=(req,res)=>{
-    const id=req.params.id;
-   
-    const deleteQuery=`DELETE FROM users where id=?`
-
-    db.execute(deleteQuery,[id],(err,result)=>{
-        if(err){
-            console.log(err)
-            res.status(500).send(err.message)
-           
-            return;
-        }
-        if(result.affectedRows===0){
+const deleteuser=async(req,res)=>{
+    try {
+         const id=req.params.id;
+         
+         const user=await users.destroy({
+            where:{
+                id:id
+            }
+         })
+         if(!user){
             res.status(404).send("users not found")
-            return;
-        }
-        console.log("user deleted")
-        res.status(200).send(`user  deleted with id ${id}`)
-    })
+             return;
+         }
+          res.status(200).send(`user deleted`)
 
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+   
 }
 
 module.exports={
