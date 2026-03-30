@@ -11,7 +11,7 @@ const bookings=sequelize.define('bookings',{
     },
     seatNumber:{
         type:DataTypes.INTEGER,
-        allowNull:false
+        allowNull:false 
      
     }
 

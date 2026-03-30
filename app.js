@@ -2,6 +2,7 @@ const express=require('express')
 const db=require('./utils/db-connection')
 const app=express()
 app.use(express.json());
+require('./models')
 
 const usersRoute=require('./routes/usersRoute')
 const busesRoute=require('./routes/busesRoute')
@@ -10,8 +11,10 @@ const bookingsRoute=require('./routes/bookingRoute')
 
 
 
-db.sync({force:true}).then(()=>{
-    app.listen(3000,()=>{
+
+
+db.sync({force:false}).then(()=>{
+    app.listen(3000,()=>{ 
     console.log("listening to server")
     })
 })

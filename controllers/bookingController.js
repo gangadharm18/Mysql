@@ -1,5 +1,7 @@
-const db=require('../utils/db-connection')
+// const db=require('../utils/db-connection')
 const bookings=require('../models/bookingmodel');
+const buses = require('../models/busesmodel');
+const users=require('../models/usersmodel')
 
 
 const addBooking=async(req,res)=>{
@@ -67,10 +69,35 @@ const getBooking=async(req,res)=>{
     }
     
 }
+const userbooking=async(req,res)=>{
+    try {
+        const {userId,busId,seatNumber}=req.body
+        const user=await users.findByPk(userId)
+        const bus=await buses.findByPk(busId)
+        if (!user || !bus) {
+        return res.status(404).send("User or Bus not found");
+        }
+        const booking=await bookings.create({
+            seatNumber:seatNumber,
+            userId:user.id,
+            busId:bus.id
+        });
+
+        
+        const updateduser=await users.findByPk(userId,{
+            include:[{model:bookings,include:[buses]}]
+
+        })
+        res.status(201).json(updateduser)
+    } catch (error) {
+         res.status(500).send(error.message)
+    }
+}
 
 module.exports={
     addBooking,
     updateBooking,
     deleteBooking,
-    getBooking
+    getBooking,
+    userbooking
 }

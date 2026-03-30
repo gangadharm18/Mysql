@@ -3,7 +3,7 @@ const {DataTypes}=require('sequelize')
 const sequelize=require('../utils/db-connection')
 
 const payments=sequelize.define('payments',{
-    id:{
+    id:{ 
         type:DataTypes.INTEGER,
         primaryKey:true,
         autoIncrement:true,

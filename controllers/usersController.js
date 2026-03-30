@@ -1,7 +1,10 @@
-const db=require('../utils/db-connection')
+
 const users=require('../models/usersmodel');
+const bookings=require('../models/bookingmodel');
+const { use } = require('../routes/bookingRoute');
+const buses = require('../models/busesmodel');
 
-
+//adduser
 const getusers=async(req,res)=>{
     try {
         const allusers=await users.findAll();
@@ -18,7 +21,6 @@ const getusers=async(req,res)=>{
 
 }
 //addor insert
-
 const adduser=async(req,res)=>{
     try {
          const {name,email}=req.body;
@@ -34,6 +36,8 @@ const adduser=async(req,res)=>{
     
 
 }
+
+//update user
 const updateusername=async(req,res)=>{
     try {
         const id=req.params.id;
@@ -55,6 +59,7 @@ const updateusername=async(req,res)=>{
    
 
 }
+
 //delete
 const deleteuser=async(req,res)=>{
     try {
@@ -77,9 +82,32 @@ const deleteuser=async(req,res)=>{
    
 }
 
+//getuserbookinhg
+const userbooking=async(req,res)=>{
+    // console.log("req.params:", req.params);
+
+     try {
+        const userId=parseInt(req.params.id);
+        console.log("user id got",userId)
+       const bookingForUser=await bookings.findAll({
+        where:{
+            userId:userId,
+            
+        },attributes:["id","seatNumber"],
+        include:{model:buses,attributes:["busNumber"]}
+       })
+
+       res.status(200).json(bookingForUser);
+
+     } catch (error) {
+        res.status(500).send(error.message)
+     }
+}
+
 module.exports={
     getusers,
     adduser,
     updateusername,
-    deleteuser
+    deleteuser,
+    userbooking
 }
