@@ -7,7 +7,7 @@ const buses=sequelize.define('buses',{
         type:DataTypes.INTEGER,
         primaryKey:true,
         autoIncrement:true,
-        allowNull:false
+        allowNull:false 
     },
     busNumber:{
         type:DataTypes.STRING,

@@ -1,7 +1,10 @@
 const {Op } = require('sequelize');
 const buses=require('../models/busesmodel');
+const User=require('../models/usersmodel')
 const sequelize = require('sequelize');
+const bookings = require('../models/bookingmodel');
 
+//getbus
 const getbuses=async(req,res)=>{
      try {
         const allbuses=await buses.findAll();
@@ -47,7 +50,7 @@ const getbusesMorethan=async(req,res)=>{
                 }
                 
             }
-         })
+         }) 
         
         if(Buses.length===0){
             res.status(404).send(`no buses found more than ${requested} seats`)
@@ -95,12 +98,31 @@ const deletebus=async(req,res)=>{
     res.status(200).send("selected bus deleted")
 }
 
+//
+const getbusForUser=async(req,res)=>{
+      try {
+        const id=parseInt(req.params.id)
+
+        const user=await bookings.findAll({
+            where:{
+                userId:id
+            },
+            attributes:["id","seatNumber"],
+            include:{model:User,attributes:["name","email"]}
+        })
+         res.status(200).json(user);
+
+      } catch (error) {
+        res.status(500).send(error.message)
+      }
+}
 module.exports={
 
     addbuses,
     getbuses,
     getbusesMorethan,
     updateBus,
-    deletebus
+    deletebus,
+    getbusForUser
   
 }

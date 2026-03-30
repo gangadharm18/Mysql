@@ -8,6 +8,7 @@ router.post('/',busescontroller.addbuses)
 router.get('/morethan/:seats',busescontroller.getbusesMorethan)
 router.put('/:id',busescontroller.updateBus)
 router.delete('/:id',busescontroller.deletebus)
+router.get('/:id/bookings',busescontroller.getbusForUser)
 
 module.exports=router;
 
